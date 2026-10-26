@@ -1797,6 +1797,8 @@ fn pipeline(
 }
 
 impl Resources {
+    /// The canvas shaders, pipelines and samplers for a `target` surface, with the `Rgba16Float`
+    /// tile pipelines when `high`.
     fn new(device: &wgpu::Device, queue: &wgpu::Queue, target: wgpu::TextureFormat, high: bool) -> Self {
         let module =
             device.create_shader_module(wgpu::ShaderModuleDescriptor { label: Some("pc_canvas"), source: wgpu::ShaderSource::Wgsl(CANVAS_WGSL.into()) });
@@ -2653,9 +2655,10 @@ fn vs(@builtin(vertex_index) vi: u32) -> V {
     return V(vec4(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, 0.0, 1.0), uv);
 }
 
+// One texel of the next mip level: a bilinear tap at the destination texel centre averages
+// the 2×2 source block.
 @fragment
 fn fs(in: V) -> @location(0) vec4<f32> {
-    // A bilinear tap at the destination texel centre averages the 2×2 source block.
     return textureSampleLevel(src, samp, in.uv, 0.0);
 }
 
